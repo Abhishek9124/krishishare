@@ -3,7 +3,7 @@ import api from '../api';
 import { useAuth } from '../context/AuthContext';
 
 export default function AdminDashboard() {
-  const { login } = useAuth();
+  const { user, login } = useAuth();
   const [overview, setOverview] = useState(null);
   const [settlements, setSettlements] = useState([]);
   const [users, setUsers] = useState([]);
@@ -46,7 +46,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [user]);
 
   const handleFormChange = (settlementId, field, value) => {
     setAuditForm((prev) => ({
@@ -96,19 +96,19 @@ export default function AdminDashboard() {
   };
 
   if (loading) return <div className="container"><p className="muted">Loading Admin Portal...</p></div>;
-  if (error) {
+  if (error || user?.role !== 'admin') {
     return (
       <div className="container">
         <div className="card" style={{ textAlign: 'center', padding: '40px 20px', borderTop: '4px solid var(--danger)' }}>
           <h2 style={{ color: 'var(--danger)', marginTop: 0 }}>🛡️ Admin Credentials Required</h2>
-          <p className="muted">{error}</p>
+          <p className="muted">{error || 'You must be logged in as an Admin to access this audit dashboard.'}</p>
           <button
             className="btn"
             style={{ marginTop: '16px' }}
             onClick={async () => {
               try {
                 await login('admin@krishishare.com', 'admin123');
-                fetchData();
+                window.location.reload();
               } catch (e) {
                 console.error(e);
               }
