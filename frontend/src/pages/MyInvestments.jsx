@@ -4,9 +4,19 @@ import api from '../api';
 
 export default function MyInvestments() {
   const [investments, setInvestments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    api.get('/investments/mine').then((res) => setInvestments(res.data));
+    setLoading(true);
+    setError('');
+    api.get('/investments/mine')
+      .then((res) => setInvestments(res.data))
+      .catch((err) => {
+        console.error(err);
+        setError('Failed to load portfolio investments.');
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const totalInvested = investments.reduce((sum, i) => sum + Number(i.amount), 0);
@@ -14,18 +24,24 @@ export default function MyInvestments() {
     .filter((i) => i.status === 'settled')
     .reduce((sum, i) => sum + Number(i.payout_amount || 0), 0);
 
+  if (loading) return <div className="container"><p className="muted">Loading your investment portfolio…</p></div>;
+  if (error) return <div className="container"><div className="error-text">{error}</div></div>;
+
   return (
     <div className="container">
-      <h2>My Investments</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h2>💰 My Investment Portfolio</h2>
+        <Link to="/" className="btn secondary">🌾 Browse Open Projects</Link>
+      </div>
 
       <div className="stat-row">
         <div className="stat-box">
-          <div className="label">Total Invested</div>
+          <div className="label">Total Capital Invested</div>
           <div className="value">₹{totalInvested.toLocaleString('en-IN')}</div>
         </div>
-        <div className="stat-box">
+        <div className="stat-box" style={{ background: 'var(--green-light)' }}>
           <div className="label">Total Payouts Received</div>
-          <div className="value">₹{totalPayout.toLocaleString('en-IN')}</div>
+          <div className="value" style={{ color: 'var(--green-dark)' }}>₹{totalPayout.toLocaleString('en-IN')}</div>
         </div>
         <div className="stat-box">
           <div className="label">Active Positions</div>
@@ -34,32 +50,42 @@ export default function MyInvestments() {
       </div>
 
       {investments.length === 0 ? (
-        <p className="muted">No investments yet. <Link to="/">Browse open projects</Link>.</p>
+        <div className="card">
+          <p className="muted" style={{ margin: 0 }}>
+            No investments yet. <Link to="/" style={{ fontWeight: 'bold' }}>Explore live crop projects</Link> to start funding FPOs.
+          </p>
+        </div>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Project</th>
-              <th>FPO</th>
-              <th>Amount</th>
-              <th>Status</th>
-              <th>Payout</th>
-              <th>Invested On</th>
-            </tr>
-          </thead>
-          <tbody>
-            {investments.map((i) => (
-              <tr key={i.id}>
-                <td><Link to={`/projects/${i.project_id}`}>{i.title}</Link></td>
-                <td>{i.fpo_name}</td>
-                <td>₹{Number(i.amount).toLocaleString('en-IN')}</td>
-                <td><span className={`status-pill status-${i.status}`}>{i.status}</span></td>
-                <td>{i.payout_amount ? `₹${Number(i.payout_amount).toLocaleString('en-IN')}` : '—'}</td>
-                <td>{new Date(i.invested_at).toLocaleDateString('en-IN')}</td>
+        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          <table>
+            <thead>
+              <tr>
+                <th>Project Title</th>
+                <th>FPO Producer</th>
+                <th>Invested Amount</th>
+                <th>Status</th>
+                <th>Return Payout</th>
+                <th>Date</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {investments.map((i) => (
+                <tr key={i.id}>
+                  <td><Link to={`/projects/${i.project_id}`} style={{ fontWeight: 'bold' }}>{i.title}</Link></td>
+                  <td>{i.fpo_name}</td>
+                  <td style={{ fontWeight: 'bold' }}>₹{Number(i.amount).toLocaleString('en-IN')}</td>
+                  <td>
+                    <span className={`status-pill status-${i.status}`}>{i.status}</span>
+                  </td>
+                  <td style={{ fontWeight: 'bold', color: i.payout_amount ? 'var(--green-dark)' : 'inherit' }}>
+                    {i.payout_amount ? `₹${Number(i.payout_amount).toLocaleString('en-IN')}` : '—'}
+                  </td>
+                  <td>{new Date(i.invested_at).toLocaleDateString('en-IN')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
