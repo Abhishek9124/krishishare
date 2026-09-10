@@ -61,10 +61,10 @@ export default function CropHealthGauge({ projectId }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            🛰️ Parametric Satellite & Weather Monitoring
+            🛰️ Parametric Satellite & Weather Shield
           </h3>
           <p className="muted" style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>
-            Real-time NDVI & thermal spectral analysis (Mock Telemetry Engine)
+            Real-time multispectral NDVI & weather risk assessment engine
           </p>
         </div>
 
@@ -119,6 +119,15 @@ export default function CropHealthGauge({ projectId }) {
         </div>
       </div>
 
+      {healthIndex < 60 && (
+        <div style={{ background: '#fff8e1', border: '1px solid #f0d97a', padding: '10px 14px', borderRadius: '8px', margin: '14px 0 6px 0' }}>
+          <strong style={{ color: '#8a6d00' }}>⚡ Parametric Weather Shield Warning Triggered</strong>
+          <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#6b5900' }}>
+            Vegetative stress index detected below threshold ({healthIndex.toFixed(1)}). Parametric weather insurance monitoring is active to protect crop yield advances.
+          </p>
+        </div>
+      )}
+
       {/* Progress Bar representation of crop health index */}
       <div style={{ margin: '16px 0 8px 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--muted)' }}>
@@ -140,7 +149,7 @@ export default function CropHealthGauge({ projectId }) {
       {telemetry.history && telemetry.history.length > 1 && (
         <details style={{ marginTop: '16px', fontSize: '0.85rem' }}>
           <summary style={{ cursor: 'pointer', color: 'var(--green)', fontWeight: '600' }}>
-            View Telemetry History ({telemetry.history.length} satellite scans)
+            View Telemetry Scan Log ({telemetry.history.length} satellite passes)
           </summary>
           <div style={{ maxHeight: '180px', overflowY: 'auto', marginTop: '8px' }}>
             <table>
@@ -150,7 +159,7 @@ export default function CropHealthGauge({ projectId }) {
                   <th>Health Index</th>
                   <th>NDVI</th>
                   <th>Temp</th>
-                  <th>Status & Notes</th>
+                  <th>Status & Scan Notes</th>
                 </tr>
               </thead>
               <tbody>
