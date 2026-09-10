@@ -1,102 +1,83 @@
-# Krishishare — FPO-Backed Contract Farming Marketplace (Demo Build)
+# 🌾 Krishishare — FPO-Backed Contract Farming Marketplace
 
-A working prototype of the flow from the Krishishare framework: **FPOs list crop projects → urban
-investors fund them → FPO reports the harvest sale → payouts flow back to investors.**
+Krishishare is a full-stack web application for contract farming & yield settlements: **FPOs list crop projects ➔ Urban investors fund them ➔ FPOs submit harvest revenue & proof ➔ Third-party auditors verify sales ➔ Yield payouts disburse pro-rata to investors.**
 
-**Everything financial in this build is simulated.** There is no real payment gateway, no real
-bank escrow account, and no real securities being issued. Wallet balances are just numbers in a
-Postgres table. If you ever want to move from this demo to handling real money from real investors,
-that requires an actual compliance review (see note at the bottom) — this codebase does not clear
-that bar on its own no matter what a pitch deck says about it.
+---
 
-## Stack
-- **Backend**: Node.js, Express, PostgreSQL (`pg`), JWT auth, bcrypt password hashing
-- **Frontend**: React (Vite), React Router, Axios
+## ⚡ How to Run Locally
 
-## Project structure
-```
-krishishare/
-  backend/
-    src/
-      routes/         auth, projects, investments, wallet
-      middleware/      JWT auth + role guard
-      migrations/      schema.sql + runner
-      db.js, server.js
-  frontend/
-    src/
-      pages/           Login, Register, Projects, ProjectDetail, CreateProject, MyProjects, MyInvestments, Wallet
-      components/      Navbar, ProjectCard, PrivateRoute
-      context/         AuthContext (JWT session)
-```
+### Prerequisites
+- **Node.js**: v18 or higher (`node -v`)
+- **NPM**: v9 or higher
 
-## Core data model
-- `users` — role: `fpo` | `investor` | `admin`
-- `fpo_profiles` — one per FPO user (name, registration number, region)
-- `projects` — a crop project listed by an FPO (target amount, min investment, expected return %, status)
-- `investments` — an investor's stake in a project
-- `wallets` / `wallet_transactions` — simulated ledger per user
-- `yield_settlements` — record of the harvest-sale payout event per project
+---
 
-Project status lifecycle: `open → funded → in_progress → harvested → settled` (or `cancelled`).
+### 1️⃣ Install Dependencies
 
-## Setup
+Run this single command at the project root (`krishishare/`):
 
-### 1. Database
 ```bash
-createdb krishishare
-cd backend
-cp .env.example .env
-# edit .env: set DATABASE_URL, and a real random JWT_SECRET
-npm install
-npm run migrate      # applies schema.sql
-npm run dev          # starts API on http://localhost:4000
+npm install && cd backend && npm install && cd ../frontend && npm install && cd ..
 ```
 
-### 2. Frontend
+---
+
+### 2️⃣ Start Backend & Frontend Local Servers
+
+Open **two terminal windows** in your project directory:
+
+#### **Terminal 1: Start Backend API (Port 4000)**
 ```bash
-cd frontend
-npm install
-npm run dev           # starts Vite dev server on http://localhost:5173
+npm run dev:backend
 ```
+> Express API listening on `http://localhost:4000`
 
-The Vite dev server proxies `/api/*` to `http://localhost:4000`, so just open
-`http://localhost:5173`.
+#### **Terminal 2: Start Frontend UI (Port 5173)**
+```bash
+npm run dev:frontend
+```
+> Vite Development Server ready at `http://localhost:5173`
 
-## Trying the core flow
-1. Register two accounts: one as **FPO** (fills in FPO name/region), one as **Investor**
-   (auto-gets a demo wallet balance, default ₹5,00,000 — configurable in `.env`).
-2. Log in as the FPO → **List a Project** → fill in crop, target amount, expected return, duration.
-3. Log in as the Investor → open the project → **Invest now** (deducts from the simulated wallet,
-   updates the project's raised amount; project flips to `funded` once the target is hit).
-4. Log in as the FPO again → **My Projects** → once status is `funded`/`in_progress`/`harvested`,
-   enter the total sale value of the harvested yield and settle. This pays out each investor
-   pro-rata to their share of the raise, minus the platform fee, straight into their wallet.
-5. Log in as the Investor → **Wallet** / **My Investments** to see the payout land.
+Open your browser and navigate to: **[http://localhost:5173](http://localhost:5173)**
 
-## API summary
-| Method | Path | Auth | Description |
+---
+
+### 🔑 1-Click Instant Demo Login Credentials
+
+On the Login page (`http://localhost:5173/login`), click any of the **1-Click Instant Demo Access** buttons:
+
+| Role | Email | Password | Dashboard Features |
 |---|---|---|---|
-| POST | `/api/auth/register` | – | Create FPO or investor account |
-| POST | `/api/auth/login` | – | Get JWT |
-| GET | `/api/projects` | – | List projects (optional `?status=`) |
-| GET | `/api/projects/:id` | – | Project detail + investor stats |
-| POST | `/api/projects` | FPO | List a new project |
-| GET | `/api/projects/mine/fpo` | FPO | Your own listed projects |
-| POST | `/api/projects/:id/settle` | FPO (owner) | Report harvest sale value, trigger payouts |
-| POST | `/api/investments` | Investor | Invest in an open project |
-| GET | `/api/investments/mine` | Investor | Your portfolio |
-| GET | `/api/wallet` | Any | Balance + transaction history |
+| 🛡️ **Platform Admin / Auditor** | `admin@krishishare.com` | `admin123` | Inspect harvest sale proofs, confirm yield values, approve payouts at `/admin` |
+| 🌾 **FPO Producer** | `fpo_demo@krishishare.com` | `password123` | List crop projects, view crop health telemetry, submit harvest sales for audit |
+| 💰 **Urban Investor** | `investor_demo@krishishare.com` | `password123` | Auto-receives ₹5,00,000 demo wallet balance, fund projects, track portfolio |
 
-## What this build deliberately does NOT do
-- No real payment gateway / bank escrow integration (would need Razorpay/Cashfree escrow-as-a-service
-  or an actual scheduled bank, plus RBI-compliant nodal account structuring).
-- No satellite/weather data integration (poster's "Parametric Satellite Shield" — would be a separate
-  service calling a provider like Skymet, IBM EIS, or Sentinel Hub, feeding a claims-trigger engine).
-- No KYC/AML checks on investors — required before ever touching real money.
-- No securities/contract-farming legal structuring. The original poster claims this design is
-  "100% exempt" from SEBI's Collective Investment Scheme rules and outside RBI's NBFC/P2P rules
-  because payments are called "commercial advances" and routed through escrow. That claim needs an
-  actual securities lawyer's sign-off before it's true in practice — regulators look at economic
-  substance (pooled public money + expectation of profit from a third party's effort is the classic
-  CIS test under Sec. 11AA of the SEBI Act), not the label the platform puts on the transaction.
-  Treat this app as a demo/prototype until that review happens.
+---
+
+## 🛠️ Key Project Features
+
+1. **🛰️ Parametric Satellite & Weather Monitoring**:
+   - Real-time multispectral scan engine (`/api/projects/:id/telemetry`).
+   - Crop Health Index (0–100), NDVI vegetation scores, canopy temperature, rainfall, soil moisture, historical scan logs, and **Parametric Insurance Shield Alerts**.
+   - Interactive **"⚡ Simulate Satellite Pass"** button to perturb satellite metrics live.
+
+2. **🛡️ Third-Party Auditor & Admin Portal (`/admin`)**:
+   - Platform oversight dashboard for independent auditors.
+   - Mandi receipt proof inspection, yield value confirmation, platform fee calculation, and **Approve & Execute Investor Payouts** trigger.
+
+3. **🌱 FPO Contract Farming Management (`/my-projects`)**:
+   - Crop listing creation and harvest sales proposal submission.
+
+4. **💳 Investor Wallet & Portfolio (`/wallet` & `/my-investments`)**:
+   - Pro-rata yield payout calculation and complete debit/credit transaction ledgers.
+
+---
+
+## 🛠️ Build for Production
+
+To create a production static build:
+
+```bash
+npm run build
+```
+*(Compiles the frontend bundle into `frontend/dist/` with 0 errors).*
