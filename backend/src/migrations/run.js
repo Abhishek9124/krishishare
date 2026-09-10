@@ -23,6 +23,7 @@ async function run() {
         ALTER TABLE projects ADD CONSTRAINT projects_status_check CHECK (status IN ('open','funded','in_progress','harvested','settlement_pending','settled','cancelled'));
       `);
       await pool.query(`
+        ALTER TABLE yield_settlements ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'pending';
         ALTER TABLE yield_settlements ADD COLUMN IF NOT EXISTS fpo_yield_value NUMERIC(14,2);
         ALTER TABLE yield_settlements ADD COLUMN IF NOT EXISTS proof_docs TEXT;
         ALTER TABLE yield_settlements ADD COLUMN IF NOT EXISTS reviewed_by INTEGER REFERENCES users(id);
@@ -45,7 +46,7 @@ async function run() {
       console.log('Seeded default admin user: admin@krishishare.com / admin123');
     }
 
-    console.log('Migration applied successfully.');
+    console.log('Migration applied successfully to Supabase.');
   } catch (err) {
     console.error('Migration failed:', err.message);
     process.exitCode = 1;
