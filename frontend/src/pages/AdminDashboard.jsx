@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
+import { useAuth } from '../context/AuthContext';
 
 export default function AdminDashboard() {
+  const { login } = useAuth();
   const [overview, setOverview] = useState(null);
   const [settlements, setSettlements] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('settlements'); // 'settlements' | 'users'
+  const [activeTab, setActiveTab] = useState('settlements');
 
-  // Audit form state per settlement
   const [auditForm, setAuditForm] = useState({});
   const [processingId, setProcessingId] = useState(null);
   const [rejectionReason, setRejectionReason] = useState({});
@@ -106,12 +107,8 @@ export default function AdminDashboard() {
             style={{ marginTop: '16px' }}
             onClick={async () => {
               try {
-                const auth = localStorage.getItem('krishishare_token');
-                // Quick switch to admin
-                const res = await api.post('/auth/login', { email: 'admin@krishishare.com', password: 'admin123' });
-                localStorage.setItem('krishishare_token', res.data.token);
-                localStorage.setItem('krishishare_user', JSON.stringify(res.data.user));
-                window.location.reload();
+                await login('admin@krishishare.com', 'admin123');
+                fetchData();
               } catch (e) {
                 console.error(e);
               }

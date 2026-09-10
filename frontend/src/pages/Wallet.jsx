@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import api from '../api';
+import { useAuth } from '../context/AuthContext';
 
 export default function Wallet() {
+  const { login } = useAuth();
   const [wallet, setWallet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -34,10 +36,8 @@ export default function Wallet() {
             style={{ marginTop: '16px' }}
             onClick={async () => {
               try {
-                const res = await api.post('/auth/login', { email: 'investor_demo@krishishare.com', password: 'password123' });
-                localStorage.setItem('krishishare_token', res.data.token);
-                localStorage.setItem('krishishare_user', JSON.stringify(res.data.user));
-                window.location.reload();
+                await login('investor_demo@krishishare.com', 'password123');
+                fetchWallet();
               } catch (e) {
                 console.error(e);
               }
