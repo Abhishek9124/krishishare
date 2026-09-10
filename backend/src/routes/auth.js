@@ -2,8 +2,6 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../db');
-const { authRateLimiter } = require('../middleware/rateLimiter');
-const { validateRegister, validateLogin } = require('../middleware/validators');
 
 const router = express.Router();
 
@@ -17,8 +15,12 @@ function signToken(user) {
 }
 
 // POST /api/auth/register
-router.post('/register', authRateLimiter, validateRegister, async (req, res) => {
+router.post('/register', async (req, res) => {
   const { name, email, password, role, fpo_name, registration_number, region } = req.body;
+
+  if (!name || !email || !password || !role) {
+    return res.status(400).json({ error: 'Name, email, password, and role are required' });
+  }
 
   let client;
   try {
@@ -43,7 +45,7 @@ router.post('/register', authRateLimiter, validateRegister, async (req, res) => 
       await client.query(
         `INSERT INTO fpo_profiles (user_id, fpo_name, registration_number, region)
          VALUES ($1, $2, $3, $4)`,
-        [user.id, fpo_name, registration_number || null, region || null]
+        [user.id, fpo_name || name, registration_number || null, region || null]
       );
     }
 
@@ -56,7 +58,7 @@ router.post('/register', authRateLimiter, validateRegister, async (req, res) => 
       [user.id, startingBalance]
     );
 
-    if (startingBalance > 0) {
+    if (startingBalance > 0 && walletResult.rows[0]) {
       await client.query(
         `INSERT INTO wallet_transactions (wallet_id, type, amount, description)
          VALUES ($1, 'credit', $2, 'Demo starting balance (simulated funds, not real money)')`,
@@ -76,16 +78,20 @@ router.post('/register', authRateLimiter, validateRegister, async (req, res) => 
         console.error('Rollback error:', rbErr.message);
       }
     }
-    console.error('Registration error:', err.message || err);
-    return res.status(500).json({ error: err.message || 'Registration failed' });
+    console.error('Registration error:', err);
+    return res.status(500).json({ error: typeof err === 'string' ? err : (err.message || 'Registration failed') });
   } finally {
     if (client) client.release();
   }
 });
 
 // POST /api/auth/login
-router.post('/login', authRateLimiter, validateLogin, async (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
+  }
 
   try {
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
@@ -106,7 +112,7 @@ router.post('/login', authRateLimiter, validateLogin, async (req, res) => {
     });
   } catch (err) {
     console.error('Login error:', err);
-    return res.status(500).json({ error: 'Login failed' });
+    return res.status(500).json({ error: typeof err === 'string' ? err : (err.message || 'Login failed') });
   }
 });
 
