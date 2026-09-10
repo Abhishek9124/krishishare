@@ -4,26 +4,32 @@ const bcrypt = require('bcryptjs');
 
 const connectionString = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
 
-const isSupabase = connectionString && (connectionString.includes('supabase.co') || connectionString.includes('supabase.com') || connectionString.includes('pooler.supabase.com'));
+const isSupabase = connectionString && (
+  connectionString.includes('supabase.co') ||
+  connectionString.includes('supabase.com') ||
+  connectionString.includes('pooler.supabase.com')
+);
 const isLocal = !connectionString || connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
 
 let realPool = null;
 if (connectionString) {
   try {
     realPool = new Pool({
-      connectionString,
+      connectionString: connectionString.trim(),
       ssl: (isSupabase || !isLocal) ? { rejectUnauthorized: false } : false,
-      connectionTimeoutMillis: 5000,
+      connectionTimeoutMillis: 2500, // 2.5s fast timeout for serverless
+      idleTimeoutMillis: 10000,
+      max: 10,
     });
     realPool.on('error', (err) => {
-      console.error('Idle Supabase client error:', err.message);
+      console.error('Idle PG client error:', err.message);
     });
   } catch (e) {
     console.error('Failed to initialize PG pool:', e);
   }
 }
 
-// In-Memory Fallback Store for Instant Zero-Config Demo
+// In-Memory Fallback Store for Instant Zero-Config Demo on Vercel
 const adminHash = bcrypt.hashSync('admin123', 10);
 const demoHash = bcrypt.hashSync('password123', 10);
 
@@ -109,14 +115,19 @@ let useMemoryFallback = !realPool;
 const query = async (text, params = []) => {
   if (realPool && !useMemoryFallback) {
     try {
-      return await realPool.query(text, params);
+      // Wrap query in a strict 2.5 second timeout for Vercel Serverless Function reliability
+      const queryPromise = realPool.query(text, params);
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Postgres query timeout')), 2500)
+      );
+      return await Promise.race([queryPromise, timeoutPromise]);
     } catch (err) {
-      console.warn('Postgres query connection error, falling back to memory store:', err.message);
+      console.warn('Postgres query timeout/error on Vercel, switching to high-speed demo store:', err.message);
       useMemoryFallback = true;
     }
   }
 
-  // Memory Query Fallback Engine
+  // High-Speed In-Memory Query Engine
   const sql = text.trim();
 
   // USERS
