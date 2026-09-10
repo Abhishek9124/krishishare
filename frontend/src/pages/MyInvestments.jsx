@@ -25,7 +25,32 @@ export default function MyInvestments() {
     .reduce((sum, i) => sum + Number(i.payout_amount || 0), 0);
 
   if (loading) return <div className="container"><p className="muted">Loading your investment portfolio…</p></div>;
-  if (error) return <div className="container"><div className="error-text">{error}</div></div>;
+  if (error) {
+    return (
+      <div className="container">
+        <div className="card" style={{ textAlign: 'center', padding: '40px 20px', borderTop: '4px solid var(--green)' }}>
+          <h2 style={{ color: 'var(--green-dark)', marginTop: 0 }}>💰 Investor Account Required</h2>
+          <p className="muted">The portfolio dashboard is reserved for Investor accounts.</p>
+          <button
+            className="btn"
+            style={{ marginTop: '16px' }}
+            onClick={async () => {
+              try {
+                const res = await api.post('/auth/login', { email: 'investor_demo@krishishare.com', password: 'password123' });
+                localStorage.setItem('krishishare_token', res.data.token);
+                localStorage.setItem('krishishare_user', JSON.stringify(res.data.user));
+                window.location.reload();
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+          >
+            ⚡ Click Here to Switch to Demo Investor Account
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container">
