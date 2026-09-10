@@ -111,7 +111,7 @@ const query = async (text, params = []) => {
     try {
       return await realPool.query(text, params);
     } catch (err) {
-      console.warn('Postgres connection failed, switching to high-availability demo memory store:', err.message);
+      console.warn('Postgres query connection error, falling back to memory store:', err.message);
       useMemoryFallback = true;
     }
   }
