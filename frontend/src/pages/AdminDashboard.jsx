@@ -37,8 +37,9 @@ export default function AdminDashboard() {
       });
       setAuditForm(initialForm);
     } catch (err) {
-      console.error(err);
-      setError('Failed to load admin dashboard data. Make sure you are logged in as an Admin.');
+      console.error('Admin Dashboard fetch error:', err);
+      const detail = err.response?.data?.error || err.message || 'Make sure you are logged in as an Admin.';
+      setError(`Failed to load admin dashboard data (${detail})`);
     } finally {
       setLoading(false);
     }
