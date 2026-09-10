@@ -74,16 +74,50 @@ const memoryProjects = [
   {
     id: 2,
     fpo_id: 1,
-    crop_name: 'Kharif Soybean',
+    crop_name: 'Kharif Organic Soybean',
     title: 'Organic Soybean Crop Cycle - Latur Belt',
-    description: 'Certified organic soybean production cluster supported by FPO input purchasing.',
+    description: 'Certified organic soybean production cluster supported by FPO direct input purchasing.',
     region: 'Latur, Maharashtra',
     target_amount: '300000.00',
     raised_amount: '300000.00',
     min_investment: '500.00',
     expected_return_pct: '15.00',
     duration_days: 90,
-    status: 'funded',
+    status: 'settlement_pending',
+    created_at: new Date(Date.now() - 85 * 86400000),
+    fpo_name: 'Nashik Grape Farmers Co-op',
+    fpo_region: 'Nashik, Maharashtra',
+  },
+  {
+    id: 3,
+    fpo_id: 1,
+    crop_name: 'High-Protein Durum Wheat',
+    title: 'Precision Irrigated Wheat Cluster - Punjab',
+    description: 'High-density wheat cultivation with IoT soil telemetry and guaranteed buyback contract.',
+    region: 'Ludhiana, Punjab',
+    target_amount: '400000.00',
+    raised_amount: '400000.00',
+    min_investment: '750.00',
+    expected_return_pct: '16.20',
+    duration_days: 100,
+    status: 'settled',
+    created_at: new Date(Date.now() - 110 * 86400000),
+    fpo_name: 'Nashik Grape Farmers Co-op',
+    fpo_region: 'Nashik, Maharashtra',
+  },
+  {
+    id: 4,
+    fpo_id: 1,
+    crop_name: 'Red Pomegranate Cluster',
+    title: 'Solapur Bhagwa Pomegranate Export Project',
+    description: 'Drip-irrigated premium orchard cluster with crop weather insurance shield.',
+    region: 'Solapur, Maharashtra',
+    target_amount: '600000.00',
+    raised_amount: '180000.00',
+    min_investment: '1500.00',
+    expected_return_pct: '20.00',
+    duration_days: 150,
+    status: 'open',
     created_at: new Date(),
     fpo_name: 'Nashik Grape Farmers Co-op',
     fpo_region: 'Nashik, Maharashtra',
@@ -91,10 +125,26 @@ const memoryProjects = [
 ];
 
 const memoryInvestments = [
-  { id: 1, project_id: 2, investor_id: 3, amount: '300000.00', status: 'active', payout_amount: null, invested_at: new Date(), settled_at: null },
+  { id: 1, project_id: 2, investor_id: 3, amount: '200000.00', status: 'active', payout_amount: null, invested_at: new Date(Date.now() - 80 * 86400000), settled_at: null },
+  { id: 2, project_id: 3, investor_id: 3, amount: '150000.00', status: 'settled', payout_amount: '174300.00', invested_at: new Date(Date.now() - 105 * 86400000), settled_at: new Date() },
 ];
 
-const memorySettlements = [];
+const memorySettlements = [
+  {
+    id: 1,
+    project_id: 2,
+    total_yield_value: '360000.00',
+    fpo_yield_value: '360000.00',
+    platform_fee_pct: '5.00',
+    platform_fee_amt: '18000.00',
+    distributable_amt: '342000.00',
+    status: 'pending',
+    notes: 'Bumper soybean harvest sold to regional agri-processing enterprise at ₹4,800/quintal.',
+    proof_docs: 'APMC Mandi Sales Invoice & Weighbridge Certificate #MH-2026-9921',
+    settled_at: new Date(),
+  },
+];
+
 const memoryTelemetry = [
   {
     id: 1,
@@ -105,8 +155,20 @@ const memoryTelemetry = [
     rainfall_mm: '14.2',
     soil_moisture_pct: '48.0',
     status: 'Optimal',
-    notes: 'Sentinel-2 Multispectral Imagery Baseline Scan',
+    notes: 'Sentinel-2 Multispectral Imagery Scan - Canopy Vigor High',
     recorded_at: new Date(),
+  },
+  {
+    id: 2,
+    project_id: 2,
+    crop_health_index: '92.10',
+    ndvi_score: '0.840',
+    temperature_c: '26.1',
+    rainfall_mm: '8.5',
+    soil_moisture_pct: '52.0',
+    status: 'Optimal',
+    notes: 'Pre-harvest satellite verification complete. Biomass index excellent.',
+    recorded_at: new Date(Date.now() - 5 * 86400000),
   },
 ];
 
