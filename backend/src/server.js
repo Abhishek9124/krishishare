@@ -13,11 +13,14 @@ const adminRoutes = require('./routes/admin');
 
 const app = express();
 
+// Enable trust proxy for Vercel reverse proxy / load balancers
+app.set('trust proxy', 1);
+
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
-// Apply general API rate limiter to all /api routes
+// Apply general API rate limiter
 app.use('/api', apiRateLimiter);
 
 app.get('/api/health', (req, res) => {
@@ -40,8 +43,9 @@ app.use((req, res) => {
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ error: 'Internal server error' });
+  console.error('Express Error Handler:', err);
+  const msg = typeof err === 'string' ? err : (err.message || 'An unexpected server error occurred.');
+  res.status(500).json({ error: msg });
 });
 
 const PORT = process.env.PORT || 4000;
