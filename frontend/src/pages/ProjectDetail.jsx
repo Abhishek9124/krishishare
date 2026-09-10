@@ -104,6 +104,13 @@ export default function ProjectDetail() {
           <p className="muted">Simulated wallet debit only — no real payment is made.</p>
           {error && <div className="error-text">{error}</div>}
           {message && <p style={{ color: 'var(--green-dark)', fontWeight: 600 }}>{message}</p>}
+          
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', flexWrap: 'wrap' }}>
+            <button className="btn-sm" style={{ background: '#e8f5e9', color: '#1b5e20', border: '1px solid #c8e6c9', cursor: 'pointer' }} onClick={() => setAmount(5000)}>+ ₹5,000</button>
+            <button className="btn-sm" style={{ background: '#e8f5e9', color: '#1b5e20', border: '1px solid #c8e6c9', cursor: 'pointer' }} onClick={() => setAmount(25000)}>+ ₹25,000</button>
+            <button className="btn-sm" style={{ background: '#e8f5e9', color: '#1b5e20', border: '1px solid #c8e6c9', cursor: 'pointer' }} onClick={() => setAmount(remaining)}>Fill Remaining (₹{remaining.toLocaleString('en-IN')})</button>
+          </div>
+
           <form onSubmit={handleInvest}>
             <label>Amount (₹) — min ₹{Number(project.min_investment).toLocaleString('en-IN')}, up to ₹{remaining.toLocaleString('en-IN')} remaining</label>
             <input
@@ -122,7 +129,11 @@ export default function ProjectDetail() {
       )}
 
       {!user && (
-        <p className="muted">Log in as an investor to fund this project.</p>
+        <div className="card" style={{ background: '#f1f8f3' }}>
+          <p className="muted" style={{ margin: 0 }}>
+            Log in as an investor to fund this project. Click <strong>Investor</strong> in the top header switcher!
+          </p>
+        </div>
       )}
     </div>
   );
